@@ -9,13 +9,25 @@
 
   <h1>Spin to Win 15,000円</h1>
 
-  <div class="pointer"></div>
+  <div class="wheel-container">
 
-  <canvas id="wheel" width="350" height="350"></canvas>
+    <div class="pointer"></div>
+
+    <div id="wheel" class="wheel">
+
+      <div class="segment s1">1000円</div>
+      <div class="segment s2">2500円</div>
+      <div class="segment s3">5000円</div>
+      <div class="segment s4">15000円</div>
+
+      <div class="center-circle"></div>
+
+    </div>
+
+  </div>
 
   <button id="spinBtn">SPIN</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/spin-wheel@5.0.2/dist/spin-wheel-iife.js"></script>
   <script src="script.js"></script>
 
 </body>
