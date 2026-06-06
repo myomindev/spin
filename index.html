@@ -1,34 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Lucky Spin</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spin Wheel</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#f5f0e8; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:sans-serif; }
+  .wheel-wrap { display:flex; flex-direction:column; align-items:center; padding:2rem 1rem; }
+  .prize-banner { font-size:24px; font-weight:700; color:#222; margin-bottom:1.2rem; text-align:center; }
+  .wheel-container { position:relative; width:300px; height:300px; margin-bottom:2rem; }
+  .wheel-svg { width:300px; height:300px; transition:transform 4s cubic-bezier(0.17,0.67,0.12,0.99); }
+  .pointer { position:absolute; top:-18px; left:50%; transform:translateX(-50%); width:0; height:0;
+    border-left:14px solid transparent; border-right:14px solid transparent; border-top:28px solid #d4a017; z-index:10; }
+  .spin-btn { background:#e87722; color:#fff; border:none; border-radius:50px; padding:14px 60px;
+    font-size:18px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(232,119,34,0.4); }
+  .spin-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .result-box { margin-top:1.2rem; font-size:20px; font-weight:600; color:#222; min-height:2rem; text-align:center; }
+  .qualifying { font-size:13px; color:#888; margin-top:0.75rem; }
+  .coupon-tag { background:#fff; border:1px solid #ddd; border-radius:8px; padding:6px 20px; font-size:14px; color:#666; margin-bottom:1.2rem; }
+</style>
 </head>
 <body>
-
-  <h1>Spin to Win 15,000円</h1>
-
+<div class="wheel-wrap">
+  <div class="prize-banner">🎉 Spin to win <span style="color:#e87722">15,000円</span></div>
+  <div class="coupon-tag">Coupon bundle</div>
   <div class="wheel-container">
-
     <div class="pointer"></div>
-
-    <div id="wheel" class="wheel">
-
-      <div class="segment s1">1000円</div>
-      <div class="segment s2">2500円</div>
-      <div class="segment s3">5000円</div>
-      <div class="segment s4">15000円</div>
-
-      <div class="center-circle"></div>
-
-    </div>
-
+    <svg class="wheel-svg" id="wheel" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="150" cy="150" r="148" fill="#2a2a2a"/>
+      <circle cx="150" cy="150" r="140" fill="#f5e8c8"/>
+      <path d="M150,150 L150,10 A140,140 0 0,0 10,150 Z" fill="#e87722"/>
+      <path d="M150,150 L10,150 A140,140 0 0,0 150,290 Z" fill="#f5e8c8"/>
+      <path d="M150,150 L150,290 A140,140 0 0,0 290,150 Z" fill="#f0dba0"/>
+      <path d="M150,150 L290,150 A140,140 0 0,0 150,10 Z" fill="#fafaf5"/>
+      <line x1="150" y1="10" x2="150" y2="290" stroke="#2a2a2a" stroke-width="3"/>
+      <line x1="10" y1="150" x2="290" y2="150" stroke="#2a2a2a" stroke-width="3"/>
+      <text x="85" y="90" text-anchor="middle" font-size="11" fill="#fff" font-weight="600" font-family="sans-serif">Jackpot</text>
+      <text x="82" y="110" text-anchor="middle" font-size="18" fill="#fff" font-weight="700" font-family="sans-serif">15,000円</text>
+      <g transform="rotate(-90 150 150)"><text x="82" y="110" text-anchor="middle" font-size="18" fill="#8a6a30" font-weight="700" font-family="sans-serif">1,000円</text></g>
+      <g transform="rotate(180 150 150)"><text x="82" y="110" text-anchor="middle" font-size="18" fill="#7a5820" font-weight="700" font-family="sans-serif">2,500円</text></g>
+      <g transform="rotate(90 150 150)">
+        <text x="82" y="102" text-anchor="middle" font-size="14" fill="#555" font-weight="600" font-family="sans-serif">1 more</text>
+        <text x="82" y="118" text-anchor="middle" font-size="14" fill="#555" font-weight="600" font-family="sans-serif">chance</text>
+      </g>
+      <circle cx="150" cy="150" r="22" fill="#1a1a1a"/>
+      <circle cx="150" cy="150" r="16" fill="#333"/>
+      <circle cx="150" cy="150" r="8" fill="#555"/>
+      <circle cx="150" cy="14" r="7" fill="#d4a017" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="14" cy="150" r="7" fill="#d4a017" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="286" cy="150" r="7" fill="#d4a017" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="150" cy="286" r="7" fill="#d4a017" stroke="#fff" stroke-width="1.5"/>
+    </svg>
   </div>
-
-  <button id="spinBtn">SPIN</button>
-
-  <script src="script.js"></script>
-
+  <button class="spin-btn" id="spinBtn" onclick="spinWheel()">Spin</button>
+  <div class="qualifying">With qualifying orders ⓘ</div>
+  <div class="result-box" id="result"></div>
+</div>
+<script>
+  const prizes = [
+    { label: "Jackpot 15,000円 🎊", angle: 315 },
+    { label: "1,000円 クーポン 🎟️", angle: 225 },
+    { label: "2,500円 クーポン 🎉", angle: 135 },
+    { label: "もう1回チャンス 🔄", angle: 45 }
+  ];
+  let currentRotation = 0;
+  let spinning = false;
+  function spinWheel() {
+    if (spinning) return;
+    spinning = true;
+    const btn = document.getElementById("spinBtn");
+    const result = document.getElementById("result");
+    const wheel = document.getElementById("wheel");
+    btn.disabled = true;
+    result.textContent = "";
+    const prize = prizes[Math.floor(Math.random() * prizes.length)];
+    const extraSpins = 5 + Math.floor(Math.random() * 5);
+    currentRotation += prize.angle + (extraSpins * 360);
+    wheel.style.transition = "transform 4s cubic-bezier(0.17,0.67,0.12,0.99)";
+    wheel.style.transform = `rotate(${currentRotation}deg)`;
+    setTimeout(() => {
+      result.innerHTML = "✨ <strong>" + prize.label + "</strong>";
+      spinning = false;
+      btn.disabled = false;
+    }, 4200);
+  }
+</script>
 </body>
 </html>
